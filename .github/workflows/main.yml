@@ -1,31 +1,49 @@
 name: Deploy Vite App
+
 on:
   push:
-    branches: ["main"] # 你的分支叫 main
+    branches: ["main"]
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      - run: npm install
-      - run: npm run build
+          # 删除了 cache: 'npm'，避免找不到 lock 文件的错误
+
+      - name: Install dependencies
+        # 使用 --no-package-lock 忽略锁文件检查
+        run: npm install --no-package-lock
+
+      - name: Build project
+        run: npm run build
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      - uses: actions/upload-pages-artifact@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist # Vite 默认打包到 dist 文件夹
+          # Vite 默认打包后的文件夹是 dist
+          path: ./dist
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
