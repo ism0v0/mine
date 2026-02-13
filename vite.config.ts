@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     // 关键修复：添加这一行，确保部署到 GitHub Pages 路径正确
-    base: './', 
+    base: '/mine/', 
     server: {
       port: 3000,
       host: '0.0.0.0',
